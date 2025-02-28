@@ -1,13 +1,42 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <form onsubmit="loadRecipeAPI()">
+      <input type="text" placeholder="Search Recipes" id="search" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <script>
+      function loadRecipeAPI() {
+        console.log("Submit button clicked! Loading recipe");
+        const search = document.getElementById("search").value;
+        console.log(search);
+        const apiUrl = "https://api.spoonacular.com/recipes/complexSearch";
+        const apiKey = "fd7a4281d01c4c0d9a01d825aa63d22f"; //should not have easily accessible
+        console.log(`${apiUrl}?query=${search}&apiKey=${apiKey}`);
+
+        fetch(`${apiUrl}?query=${search}&apiKey=${apiKey}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+    </script>
   </body>
+  <!--Page layout: login/sign up main page, common ingredient entry, 
+  ingredient entry, meal plan/grocery, and recipe generation-->
 </html>
