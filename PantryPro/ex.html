@@ -71,7 +71,7 @@
             const search = document.getElementById("search").value;
             console.log(search);
             const apiUrl = "https://api.spoonacular.com/recipes/complexSearch";
-            const apiKey = "fd7a4281d01c4c0d9a01d825aa63d22f"; // Should not be publicly exposed
+            const apiKey = process.env.SPOONACULAR_API_KEY;
             console.log(`${apiUrl}?query=${search}&apiKey=${apiKey}`);
 
             fetch(`${apiUrl}?query=${search}&apiKey=${apiKey}`)
