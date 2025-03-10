@@ -6,10 +6,10 @@
     <title>PantryPro</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <!--
+
+  <!--
     Nav Bar at the top (+log out implementation)
-    
+
     Form for submitting ingredients on the left:
         -Name
         -Quantity (number only)
@@ -22,5 +22,41 @@
         -allows update
         -allows deletion
     -->
+  <body>
+    <nav class="navbar">
+      <a href="./pantry.html">Pantry</a>
+      <a href="./recipes.html">Recipes</a>
+      <a href="./mealplan.html">Meal Plan</a>
+    </nav>
+
+    <form>
+      <label for="name">Food Item:</label>
+      <input type="text" id="name" /><br />
+      <label for="amount">Quantity:</label>
+      <input type="number" id="amount" />
+      <select id="units">
+        <option value="mL">mL</option>
+        <option value="gram">g</option>
+        <option value="tsp">tsp</option>
+        <option value="tbsp">tbsp</option>
+        <option value="floz">fl oz</option>
+        <option value="cup">cup</option>
+        <option value="gal">gal</option>
+        <option value="oz">oz</option>
+        <option value="unit">unit</option>
+      </select>
+      <br />
+      <label for="date">Expiration Date:</label>
+      <input type="date" /><br />
+      <input type="submit" />
+    </form>
+
+    <table id="kitchen">
+      <tr>
+        <th>Food Item</th>
+        <th>Quantity</th>
+        <th>Expiration</th>
+      </tr>
+    </table>
   </body>
 </html>
