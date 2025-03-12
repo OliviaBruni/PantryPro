@@ -1,0 +1,53 @@
+Breakdown:
+-create a detailed list of features
+    -make a list of API calls needed for features
+
+API calls: important page - https://spoonacular.com/food-api/docs#Working-with-the-Meal-Planner
+-User Sign-up
+    -create & store user info (at least username, first name, last name, email)
+    -use API connect user (below) to connect user to Spoonacular
+    https://spoonacular.com/food-api/docs#Connect-User
+    -store returned information from API call
+-User display/add/remove ingredients to kitchen
+    -user adds ingredient information:
+        -name
+        -amount
+        -unit
+        -exp date
+    -this is tracked in our database for expiration date tracking
+    -remove based on id/checkbox is clicked so it can be removed
+-User generate recipes based on kitchen
+    -send user ingredients to api
+        https://spoonacular.com/food-api/docs#Search-Recipes-by-Ingredients
+    -displays top 5 recipes
+-User generate meal plans
+    -select x amount of recipes generated (above)
+        -generate random recipes as desired??
+            https://spoonacular.com/food-api/docs#Get-Random-Recipes
+        -search recipes as desired??
+            https://spoonacular.com/food-api/docs#Search-Recipes-Complex
+
+
+Site Breakdown:
+-landing page requires login
+-once logged in, the landing page is then the kitchen ingredients page
+    -enter ingredients
+    -remove ingredients
+    -how are the submissions handled (our database API calls)
+-drop down tab list for the other pages, available once logged in
+-generate meal plan
+    -based on data returned from the api call
+    -api calls include:
+        -generate meal plan template/select meal plan template
+        -generate meal plan
+        -add/remove from meal plan
+-suggest recipes
+    -based on data returned from the api call
+    -api calls include:
+        -complex search
+        -search by ingredients (in kitchen)
+        -random recipes if desired
+-shopping list page
+    -generate based on meal plan provided
+    -add/remove from shopping list
+    
