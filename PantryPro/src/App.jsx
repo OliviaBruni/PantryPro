@@ -1,4 +1,6 @@
 import { useState, useEffect, use } from "react";
+import { auth, googleProvider } from "./firebaseConfig";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import "./App.css";
 import axios from "axios";
 
@@ -8,6 +10,73 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [recipes, setRecipes] = useState([]);
   const [page, setPage] = useState("landing");
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+
+      if (currentUser) {
+        const token = await currentUser.getIdToken();
+        await fetch("http://localhost:8080/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: currentUser.displayName,
+            email: currentUser.email,
+          }),
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const login = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      setUser(result.user);
+
+      const token = await result.user.getIdToken();
+      await fetch("http://localhost:8080/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: result.user.displayName,
+          email: result.user.email,
+        }),
+      });
+    } catch (error) {
+      console.error("Login failed:", error.message);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setPage("landing");
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
+  const fetchProtectedData = async () => {
+    if (!user) return;
+    const token = await user.getIdToken();
+
+    const response = await fetch("http://localhost:8080/protected", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await response.json();
+    console.log(data);
+  };
 
   const addIngredient = () => {
     if (input.trim() && !ingredients.includes(input)) {
@@ -39,12 +108,24 @@ function App() {
 
   return (
     <div className="container">
+      <h1>PantryPro</h1>
+      {user ? (
+        <>
+          <p>Welcome, {user.displayName}</p>
+          <button onClick={logout}>Logout</button>
+        </>
+      ) : (
+        <button onClick={login}>Login with Google</button>
+      )}
+
+      {/* Navigation Buttons */}
       {page === "landing" && (
         <div>
-          <h1>Welcome to PantryPro</h1>
+          <h2>Welcome to PantryPro</h2>
           <button onClick={() => setPage("pantry")}>Get Started</button>
         </div>
       )}
+
       {page === "pantry" && (
         <div>
           <h2>Manage Your Pantry</h2>
@@ -65,14 +146,13 @@ function App() {
               </li>
             ))}
           </ul>
-          <button onClick={() => removeIngredient(ingredient)}>Remove</button>
+          <button onClick={fetchRecipes}>Find Recipes</button>
         </div>
       )}
 
       {page === "recipes" && (
         <div>
           <h2>Generated Recipes</h2>
-          <button onClick={fetchRecipes}>Fetch Recipes</button>
           {loading && <p>Loading...</p>}
           <ul>
             {recipes.map((recipe, index) => (
