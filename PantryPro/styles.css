@@ -34,6 +34,9 @@ body {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 86862e6 (Removed node_modules from Git tracking)
 body.index {
   background-image: url("https://media.giphy.com/media/9Tv3pgpjE9VJbT7C77/giphy.gif?cid=ecf05e47hgim304rhim14gehhu3x986eewmspdj1cxotyjsz&ep=v1_gifs_search&rid=giphy.gif&ct=g");
   background-size: 100vw 100vh;
@@ -51,8 +54,11 @@ section.tagline {
   align-self: right;
 }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 237c4ef (Added Google Sign-in Button)
+=======
+>>>>>>> 86862e6 (Removed node_modules from Git tracking)
 /* Google Sign-up/Sign-in button */
 .gsi-material-button {
   -moz-user-select: none;
