@@ -30,32 +30,36 @@
       <a href="./mealplan.html">Meal Plan</a>
     </nav>
 
-    <table id="kitchen">
-      <tr>
-        <th>Food Item</th>
-        <th>Quantity</th>
-        <th>Expiration</th>
-      </tr>
-    </table>
+    <section class="container left-align">
+      <table id="kitchen">
+        <tr>
+          <th>Food Item</th>
+          <th>Quantity</th>
+          <th>Expiration</th>
+        </tr>
+      </table>
+    </section>
 
-    <section class="search-types">
-      <section class="complex">
-        <!--formatting for complex spoonacular search-->
-        <label for="comp">Search Recipes:</label>
-        <input type="text" id="comp" />
-        <input type="submit" />
-      </section>
-      <section class="random">
-        <!--formatting for random spoonacular search-->
-        <label for="rand">Generate Random Recipe:</label>
-        <input type="submit" id="rand" />
-      </section>
-      <section class="ingredient">
-        <!--formatting for search based on ingredient list-->
-        <label for="ing">Generate Recipes from Kitchen Ingredients:</label>
-        <input type="number" />
-        <!--make the input only integers-->
-        <input type="submit" />
+    <section class="container right-align">
+      <section class="search-types">
+        <section class="complex">
+          <!--formatting for complex spoonacular search-->
+          <label for="comp">Search Recipes:</label>
+          <input type="text" id="comp" />
+          <input type="submit" />
+        </section>
+        <section class="random">
+          <!--formatting for random spoonacular search-->
+          <label for="rand">Generate Random Recipe:</label>
+          <input type="submit" id="rand" />
+        </section>
+        <section class="ingredient">
+          <!--formatting for search based on ingredient list-->
+          <label for="ing">Generate Recipes from Kitchen Ingredients:</label>
+          <input type="number" />
+          <!--make the input only integers-->
+          <input type="submit" />
+        </section>
       </section>
     </section>
   </body>
