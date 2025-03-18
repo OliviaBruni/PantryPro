@@ -1,3 +1,2 @@
 node_modules
-PantryPro/.env
-PantryPro/serviceAccountkey.json
+.DS_Store
