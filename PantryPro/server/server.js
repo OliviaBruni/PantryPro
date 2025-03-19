@@ -3,73 +3,242 @@ import express from "express";
 import cors from "cors";
 import axios from "axios";
 import { verifyToken } from "./authMiddleware.js";
-import { db, auth } from "./firebaseAdmin.js";
+import { db } from "./firebaseAdmin.js";
 
 dotenv.config();
 
 const app = express();
-const corsOptions = {
-  origin: ["http://localhost:5173"],
-  credentials: true,
-};
-
 const BASE_URL = "https://api.spoonacular.com";
+const API_KEY = process.env.SPOONACULAR_API_KEY;
 
-app.use(cors(corsOptions));
+app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 
-app.get("/protected", verifyToken, (req, res) => {
-  res.json({ message: "This is a protected route", user: req.user });
-});
-
-app.post("/users", verifyToken, async (req, res) => {
+/**
+ * User Sign-up & Spoonacular User Connection
+ */
+app.post("/signup", verifyToken, async (req, res) => {
   try {
-    const { email, name } = req.body;
-    await db.collection("users").doc(req.user.uid).set({
+    const { username, firstName, lastName, email } = req.body;
+    const userId = req.user.uid;
+
+    // Save user info to Firestore
+    await db.collection("users").doc(userId).set({
+      username,
+      firstName,
+      lastName,
       email,
-      name,
       createdAt: new Date(),
     });
-    res.status(200).json({ message: "User added successfully" });
-  } catch (error) {
-    res.status(500).json({ error: "Failed to add user data" });
-  }
-});
-app.get("/users/:id", verifyToken, async (req, res) => {
-  try {
-    const userDoc = await db.collection("users").doc(req.params.id).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(userDoc.data());
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch user data" });
-  }
-});
 
-app.get("/api/recipes", async (req, res) => {
-  const { ingredients } = req.query;
+    // Connect user to Spoonacular
+    const spoonacularResponse = await axios.post(
+      `${BASE_URL}/users/connect`,
+      { username },
+      { params: { apiKey: API_KEY } }
+    );
 
-  if (!ingredients) {
-    return res.status(400).json({ message: "Missing search query" });
-  }
-  try {
-    const response = await get(`${BASE_URL}/recipes/findByIngredients`, {
-      params: {
-        ingredients,
-        apiKey: process.env.API_KEY,
-        number: 10,
-      },
-    });
+    const spoonacularData = spoonacularResponse.data;
 
-    res.json(response.data);
+    // Store Spoonacular user data in Firestore
+    await db.collection("users").doc(userId).update({ spoonacularData });
+
+    res
+      .status(200)
+      .json({ message: "User signed up & connected!", spoonacularData });
   } catch (error) {
     res
       .status(500)
-      .json({ message: "Error fetching recipe", error: error.message });
+      .json({ error: "Failed to sign up", details: error.message });
   }
 });
 
+/**
+ * Add Ingredient to User's Kitchen
+ */
+app.post("/kitchen/add", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { name, amount, unit, expDate } = req.body;
+
+    const ingredientRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("kitchen")
+      .doc();
+    await ingredientRef.set({
+      name,
+      amount,
+      unit,
+      expDate,
+      id: ingredientRef.id,
+    });
+
+    res.status(200).json({
+      message: "Ingredient added!",
+      ingredient: { name, amount, unit, expDate },
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to add ingredient", details: error.message });
+  }
+});
+
+/**
+ * Remove Ingredient from User's Kitchen
+ */
+app.delete("/kitchen/remove/:id", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const ingredientId = req.params.id;
+
+    await db
+      .collection("users")
+      .doc(userId)
+      .collection("kitchen")
+      .doc(ingredientId)
+      .delete();
+
+    res.status(200).json({ message: "Ingredient removed!" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to remove ingredient", details: error.message });
+  }
+});
+
+/**
+ * Get User's Kitchen Ingredients
+ */
+app.get("/kitchen", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const snapshot = await db
+      .collection("users")
+      .doc(userId)
+      .collection("kitchen")
+      .get();
+
+    const ingredients = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    res.status(200).json(ingredients);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to fetch kitchen ingredients",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Generate Recipes from Ingredients
+ */
+app.get("/recipes", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+
+    // Fetch user's ingredients
+    const snapshot = await db
+      .collection("users")
+      .doc(userId)
+      .collection("kitchen")
+      .get();
+    const ingredients = snapshot.docs.map((doc) => doc.data().name).join(",");
+
+    if (!ingredients) {
+      return res.status(400).json({ error: "No ingredients found" });
+    }
+
+    // Fetch recipes
+    const response = await axios.get(`${BASE_URL}/recipes/findByIngredients`, {
+      params: {
+        ingredients,
+        number: 5,
+        apiKey: API_KEY,
+      },
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to fetch recipes", details: error.message });
+  }
+});
+
+/**
+ * Generate Meal Plan
+ */
+app.get("/meal-plan", verifyToken, async (req, res) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/mealplanner/generate`, {
+      params: {
+        timeFrame: "week",
+        apiKey: API_KEY,
+      },
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Failed to generate meal plan", details: error.message });
+  }
+});
+
+/**
+ * Generate Random Recipes
+ */
+app.get("/random-recipes", async (req, res) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/recipes/random`, {
+      params: { number: 5, apiKey: API_KEY },
+    });
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to fetch random recipes",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Generate Shopping List from Meal Plan
+ */
+app.get("/shopping-list", verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const mealPlanRef = db
+      .collection("users")
+      .doc(userId)
+      .collection("mealPlan");
+    const snapshot = await mealPlanRef.get();
+
+    const ingredients = [];
+    snapshot.docs.forEach((doc) => {
+      const { extendedIngredients } = doc.data();
+      if (extendedIngredients) {
+        ingredients.push(...extendedIngredients);
+      }
+    });
+
+    res.status(200).json({ shoppingList: ingredients });
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to generate shopping list",
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Server Listening
+ */
 app.listen(8080, () => {
   console.log("Server started on port 8080");
 });

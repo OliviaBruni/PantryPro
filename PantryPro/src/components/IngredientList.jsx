@@ -1,11 +1,14 @@
 import PropTypes from "prop-types";
 
-const IngredientList = ({ ingredients, onRemove }) => (
+const IngredientList = ({ ingredients = [], onRemove }) => (
   <ul>
     {ingredients.map((ingredient) => (
-      <li key={ingredient}>
-        {ingredient}{" "}
-        <button type="button" onClick={() => onRemove(ingredient)}>
+      <li key={ingredient.id || ingredient}>
+        {ingredient.name || ingredient}{" "}
+        <button
+          type="button"
+          onClick={() => onRemove(ingredient.id || ingredient)}
+        >
           Remove
         </button>
       </li>
@@ -14,7 +17,15 @@ const IngredientList = ({ ingredients, onRemove }) => (
 );
 
 IngredientList.propTypes = {
-  ingredients: PropTypes.arrayOf(PropTypes.string).isRequired,
+  ingredients: PropTypes.arrayOf(
+    PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.shape({
+        id: PropTypes.string,
+        name: PropTypes.string.isRequired,
+      }),
+    ])
+  ),
   onRemove: PropTypes.func.isRequired,
 };
 

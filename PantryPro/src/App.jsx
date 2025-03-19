@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { auth, googleProvider } from "./firebaseConfig";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import PantryPage from "./pages/PantryPage";
@@ -39,18 +45,15 @@ const App = () => {
   };
 
   return (
-    <div className="container">
+    <Router>
       <Navbar user={user} onLogin={login} onLogout={logout} />
-      {page === "landing" && (
-        <LandingPage onNavigate={() => setPage("pantry")} />
-      )}
-      {page === "pantry" && (
-        <PantryPage onNavigate={() => setPage("recipes")} />
-      )}
-      {page === "recipes" && (
-        <RecipesPage onNavigate={() => setPage("pantry")} />
-      )}
-    </div>
+      <Routes>
+        <Route path="/" element={<LandingPage onLogin={login} />} />
+        <Route path="/pantry" element={<PantryPage />} />
+        <Route path="/recipes" element={<RecipesPage />} />
+        <Route path="*" element={<h2>404 - Page Not Found</h2>} />
+      </Routes>
+    </Router>
   );
 };
 
