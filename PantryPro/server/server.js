@@ -16,6 +16,10 @@ const API_KEY = process.env.SPOONACULAR_API_KEY;
 app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("PantryPro Backend is Running!");
+});
+
 app.post("/signup", verifyToken, async (req, res) => {
   try {
     const { username, firstName, lastName, email } = req.body;
