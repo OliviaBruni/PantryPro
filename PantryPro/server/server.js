@@ -13,7 +13,12 @@ const PORT = process.env.PORT || 8080;
 const BASE_URL = "https://api.spoonacular.com";
 const API_KEY = process.env.SPOONACULAR_API_KEY;
 
-app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
+const Origins = [
+  "https://fir-kesmail-453506.web.app",
+  "https://pantrypro.onrender.com",
+];
+
+app.use(cors({ origin: Origins, credentials: true }));
 app.use(express.json());
 
 app.get("/", (req, res) => {

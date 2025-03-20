@@ -15,4 +15,4 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-export const BASE_URL = "http://34.169.58.243:8080";
+export const BASE_URL = "https://pantrypro.onrender.com";
