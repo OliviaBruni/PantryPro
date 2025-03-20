@@ -1,9 +1,7 @@
 import admin from "firebase-admin";
-import { readFile } from "fs/promises";
 
-// Load credentials from serviceAccountKey.json
 const serviceAccount = JSON.parse(
-  await readFile(new URL("./serviceAccountKey.json", import.meta.url))
+  Buffer.from(process.env.FIREBASE_CREDENTIALS, "base64").toString("utf8")
 );
 
 if (!admin.apps.length) {
@@ -14,3 +12,5 @@ if (!admin.apps.length) {
 
 export const auth = admin.auth();
 export const db = admin.firestore();
+
+console.log("🔥 Firebase Admin initialized successfully");
