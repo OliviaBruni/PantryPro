@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import IngredientList from "../components/IngredientList";
+import { BASE_URL } from "./firebaseConfig";
 
 const PantryPage = ({ user }) => {
   const [ingredients, setIngredients] = useState([]);
@@ -14,7 +15,7 @@ const PantryPage = ({ user }) => {
       if (!user) return;
       const token = await user.getIdToken();
       try {
-        const response = await axios.get("http://localhost:8080/kitchen", {
+        const response = await axios.get(`${BASE_URL}/kitchen`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setIngredients(response.data);
@@ -46,7 +47,7 @@ const PantryPage = ({ user }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/kitchen/add",
+        `${BASE_URL}/kitchen/add`,
         ingredientData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -64,12 +65,9 @@ const PantryPage = ({ user }) => {
     const token = await user.getIdToken();
 
     try {
-      await axios.delete(
-        `http://localhost:8080/kitchen/remove/${ingredientId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await axios.delete(`${BASE_URL}/kitchen/remove/${ingredientId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setIngredients(ingredients.filter((item) => item.id !== ingredientId));
     } catch (error) {

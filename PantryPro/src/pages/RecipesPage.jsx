@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import RecipeList from "../components/RecipeList";
+import { BASE_URL } from "./firebaseConfig";
 
 const RecipesPage = ({ user }) => {
   const [recipes, setRecipes] = useState([]);
@@ -10,7 +11,7 @@ const RecipesPage = ({ user }) => {
     if (!user) return;
     setLoading(true);
     const token = await user.getIdToken();
-    const response = await axios.get("http://localhost:8080/recipes", {
+    const response = await axios.get(`${BASE_URL}/recipes`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     setRecipes(response.data);
