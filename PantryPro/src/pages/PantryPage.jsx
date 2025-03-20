@@ -18,12 +18,13 @@ const PantryPage = ({ user }) => {
         const response = await axios.get(`${BASE_URL}/kitchen`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setIngredients(response.data);
+        // setIngredients(response.data);
+        fetchIngredients();
       } catch (error) {
         console.error("Failed to fetch pantry items:", error);
       }
     };
-    fetchIngredients();
+    // fetchIngredients();
   }, [user]);
 
   const addIngredient = async () => {
