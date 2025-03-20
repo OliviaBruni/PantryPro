@@ -1,18 +1,6 @@
 import admin from "firebase-admin";
-import { readFile } from "fs/promises";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const serviceAccountPath = new URL("./serviceAccountKey.json", import.meta.url);
-
-let serviceAccount;
-try {
-  serviceAccount = JSON.parse(await readFile(serviceAccountPath));
-} catch (error) {
-  console.error("Failed to read service account key:", error);
-  process.exit(1);
-}
+const serviceAccount = JSON.parse(process.env.FIREBASE_CREDENTIALS || "{}");
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -20,7 +8,6 @@ if (!admin.apps.length) {
   });
 }
 
-console.log("Firebase Admin initialized successfully");
-
 export const auth = admin.auth();
 export const db = admin.firestore();
+console.log("🔥 Firebase Admin initialized successfully");
