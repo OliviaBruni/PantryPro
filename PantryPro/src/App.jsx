@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 import { auth, googleProvider } from "./firebaseConfig";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import PantryPage from "./pages/PantryPage";
@@ -14,13 +9,23 @@ import RecipesPage from "./pages/RecipesPage";
 import "./App.css";
 
 const App = () => {
-  const [page, setPage] = useState("landing");
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (currentUser) => {
+        console.log("👤 Firebase Auth State Changed:", currentUser);
+        setUser(currentUser);
+        setLoading(false);
+      },
+      (err) => {
+        setError("Firebase Authentication Error: " + err.message);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
@@ -30,7 +35,7 @@ const App = () => {
       const result = await signInWithPopup(auth, googleProvider);
       setUser(result.user);
     } catch (error) {
-      console.error(new Error("Login failed:", error));
+      console.error("Login failed:", error);
     }
   };
 
@@ -38,9 +43,12 @@ const App = () => {
     try {
       await signOut(auth);
       setUser(null);
-      setPage("landing");
     } catch (error) {
-      console.error(new Error("Logout failed:", error));
+      console.error("Logout failed:", error);
+    }
+
+    if (loading) {
+      return <div>Loading...</div>;
     }
   };
 
@@ -49,9 +57,8 @@ const App = () => {
       <Navbar user={user} onLogin={login} onLogout={logout} />
       <Routes>
         <Route path="/" element={<LandingPage onLogin={login} />} />
-        <Route path="/pantry" element={<PantryPage />} />
+        <Route path="/pantry" element={<PantryPage user={user} />} />
         <Route path="/recipes" element={<RecipesPage />} />
-        <Route path="*" element={<h2>404 - Page Not Found</h2>} />
       </Routes>
     </Router>
   );
