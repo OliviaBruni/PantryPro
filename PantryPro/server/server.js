@@ -8,6 +8,8 @@ import { db } from "./firebaseAdmin.js";
 dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 8080;
+
 const BASE_URL = "https://api.spoonacular.com";
 const API_KEY = process.env.SPOONACULAR_API_KEY;
 
@@ -262,9 +264,6 @@ app.get("/shopping-list", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * Server Listening
- */
-app.listen(8080, () => {
-  console.log("Server started on port 8080");
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
