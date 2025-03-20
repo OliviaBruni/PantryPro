@@ -16,9 +16,6 @@ const API_KEY = process.env.SPOONACULAR_API_KEY;
 app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
 app.use(express.json());
 
-/**
- * User Sign-up & Spoonacular User Connection
- */
 app.post("/signup", verifyToken, async (req, res) => {
   try {
     const { username, firstName, lastName, email } = req.body;
