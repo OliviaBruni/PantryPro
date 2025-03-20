@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import RecipeList from "../components/RecipeList";
-import { BASE_URL } from "./firebaseConfig";
+import { BASE_URL } from "../firebaseConfig";
 
 const RecipesPage = ({ user }) => {
   const [recipes, setRecipes] = useState([]);

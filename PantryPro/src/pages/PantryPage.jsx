@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import IngredientList from "../components/IngredientList";
-import { BASE_URL } from "./firebaseConfig";
+import { BASE_URL } from "../firebaseConfig";
 
 const PantryPage = ({ user }) => {
   const [ingredients, setIngredients] = useState([]);
