@@ -59,7 +59,24 @@ app.post("/signup", verifyToken, async (req, res) => {
 app.post("/kitchen/add", verifyToken, async (req, res) => {
   try {
     const userId = req.user.uid;
-    const { name, amount, unit, expDate } = req.body;
+    const { ingredient, amount, unit, expDate } = req.body;
+
+    if (!userId) {
+      console.error("Unauthorized request: No user ID.");
+      return res.status(401).json({ error: "Unauthorized: User ID not found" });
+    }
+    console.log("Full request body:", req.body);
+    console.log("Received data", { ingredient, amount, unit, expDate });
+
+    if (!ingredient || !amount || !unit) {
+      console.error("Missing required fields!", {
+        ingredient,
+        amount,
+        unit,
+        expDate,
+      });
+      return res.status(400).json({ error: "Missing ingredient fields" });
+    }
 
     const ingredientRef = db
       .collection("users")
@@ -67,18 +84,27 @@ app.post("/kitchen/add", verifyToken, async (req, res) => {
       .collection("kitchen")
       .doc();
     await ingredientRef.set({
-      name,
+      ingredient,
       amount,
       unit,
       expDate,
       id: ingredientRef.id,
     });
 
+    console.log(`Ingredient added for user ${userId}:`, {
+      ingredient,
+      amount,
+      unit,
+      expDate,
+    });
+
     res.status(200).json({
       message: "Ingredient added!",
-      ingredient: { name, amount, unit, expDate },
+      ingredient: { id: ingredientRef.id, ingredient, amount, unit, expDate },
     });
   } catch (error) {
+    res;
+    console.error("Firestore Error:", error.message);
     res
       .status(500)
       .json({ error: "Failed to add ingredient", details: error.message });

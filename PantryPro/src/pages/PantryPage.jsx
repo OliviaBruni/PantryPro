@@ -26,37 +26,57 @@ const PantryPage = ({ user }) => {
   }, [user]);
 
   const addIngredient = async () => {
-    if (!input.trim()) return;
+    if (!user) return;
     const token = await user.getIdToken();
+
+    // Ensure expDate is not null
+    if (!expDate) {
+      console.error("Expiration date is required");
+      return;
+    }
+
+    const ingredientData = {
+      ingredient: input.trim(), // Trim spaces
+      amount,
+      unit,
+      expDate, // Should now be correctly populated
+    };
+
+    console.log("Sending ingredient data:", ingredientData);
+
     try {
       const response = await axios.post(
         "http://localhost:8080/kitchen/add",
-        { name: input, amount, unit, expDate },
-        { headers: { Authorization: `Bearer ${token}` } }
+        ingredientData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
-
-      setIngredients([...ingredients, response.data.ingredient]);
-
-      setInput("");
-      setAmount("");
-      setUnit("");
-      setExpDate("");
+      console.log("Ingredient added:", response.data);
+      fetchIngredients(); // Refresh UI after adding
     } catch (error) {
-      console.error("Failed to add ingredient:", error);
+      console.error("Error adding ingredient:", error.response?.data || error);
     }
   };
 
-  const removeIngredient = async (id) => {
+  const removeIngredient = async (ingredientId) => {
+    if (!user) return;
     const token = await user.getIdToken();
 
     try {
-      await axios.delete(`http://localhost:8080/kitchen/remove/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axios.delete(
+        `http://localhost:8080/kitchen/remove/${ingredientId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      setIngredients(ingredients.filter((item) => item.id !== id));
+      setIngredients(ingredients.filter((item) => item.id !== ingredientId));
     } catch (error) {
-      console.error("Failed to remove ingredient:", error);
+      console.error(
+        "Error removing ingredient:",
+        error.response?.data || error
+      );
     }
   };
 
@@ -90,7 +110,7 @@ const PantryPage = ({ user }) => {
         Add
       </button>
 
-      <IngredientList ingredients={ingredients} />
+      <IngredientList ingredients={ingredients} onRemove={removeIngredient} />
       <ul>
         {ingredients.map((ingredient) => (
           <li key={ingredient.id}>
